@@ -26,3 +26,9 @@ export default {
   }
 }
 </script>
+
+<style>
+  .redcolor{
+    color: red;
+  }
+</style>

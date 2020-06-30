@@ -1,26 +1,56 @@
 <template>
-  <div id="Subject">
+  <div id="Chapter">
+    <a-Card :style="{'margin':'10px 0px'}">
+    <!-- 行业和科目下拉框 -->
+    <a-select
+      show-search
+      placeholder="行业"
+      option-filter-prop="children"
+      style="width: 200px"
+      :filter-option="filterIndustry"
+      @change="IndustryChange"
+      :style="{'margin-right':'10px'}"
+    >
+      <a-select-option value="jack">互联网</a-select-option>
+      <a-select-option value="lucy">电商</a-select-option>
+      <a-select-option value="tom">服务业</a-select-option>
+    </a-select>
+
+    <a-select
+      show-search
+      placeholder="科目"
+      option-filter-prop="children"
+      style="width: 200px"
+      :filter-option="filterSubject"
+      @change="SubjectChange"
+    >
+      <a-select-option value="jack">语文</a-select-option>
+      <a-select-option value="lucy">数学</a-select-option>
+      <a-select-option value="tom">数学</a-select-option>
+    </a-select>
+
+    </a-Card>
     <a-card>
       <div class="buttonBox">
         <!-- <a-button @click="change" :style="{'margin-right':'10px'}" type="primary">添加行业</a-button>
-         -->
-         <AddIndustry :style="{'margin-right':'10px'}" :visible="AddIndustryVisible" />
-        <a-button :style="{'background':'white','color':'red'}" type="danger">删除</a-button>
+        -->
+        <!-- 增加分类 -->
+        <Addclass />
+        <a-button @click="showDeleteConfirm" :style="{'background':'white','color':'red'}" type="danger">删除</a-button>
       </div>
       <a-table :columns="columns" :data-source="data" :row-selection="rowSelection">
         <template slot="operation" slot-scope="text, record">
           <div class="Flex">
-          <a @click="EditModal" :style="{'margin-right':'10px'}" type="link">编辑</a>
-          <!-- <a :style="{'color':'#63C83B'}" type="link">添加科目</a>
-           -->
-           <Addsubject :visible="AddIndustryVisible" :style="{'color':'#63C83B'}" />
-           </div>
+            <a @click="EditModal" :style="{'margin-right':'10px'}" type="link">编辑</a>
+            <a  :style="{'margin-right':'10px','color':'#63C83B'}" type="link">上架</a>
+            <a  :style="{'color':'#FF5858'}" type="link">下架</a>
+          </div>
         </template>
       </a-table>
     </a-card>
 
     <a-modal
-      title="编辑行业"
+      title="编辑分类"
       :visible="EditVisible"
       :confirm-loading="confirmLoading"
       okText="保存"
@@ -34,35 +64,31 @@
         :wrapper-col="{ span: 11 }"
         @submit="handleSubmit"
       >
-        <a-form-item label="行业名称">
-          <a-input v-decorator="['name', { rules: [{ required: true, message: '请输入行业名称!' }] }]" />
+        <a-form-item label="分类名称">
+          <a-input v-decorator="['name', { rules: [{ required: true, message: '请输入名称!' }] }]" />
         </a-form-item>
-        <a-form-item label="排序 行业">
-          <a-input v-decorator="['name2', { rules: [{ required: true, message: '请输入行业!' }] }]" />
+        <a-form-item label="分类介绍">
+          <a-input v-decorator="['introduced', { rules: [{ required: true, message: '请输入名称!' }] }]" />
+        </a-form-item>
+        <a-form-item label="排序 ">
+          <a-input v-decorator="['sort', { rules: [{ required: true, message: '请输入考点!' }] }]" />
         </a-form-item>
       </a-form>
     </a-modal>
-
   </div>
 </template>
 <script>
 const columns = [
   {
-    title: '行业名称',
+    title: '分类名称',
     dataIndex: 'name',
     key: 'name'
   },
   {
-    title: '所属科目',
+    title: '分类介绍',
     dataIndex: 'age',
     key: 'age',
     width: '12%'
-  },
-  {
-    title: '等级',
-    dataIndex: 'level',
-    // width: '30%',
-    key: 'level'
   },
   {
     title: '排序',
@@ -71,10 +97,10 @@ const columns = [
     key: 'sort'
   },
   {
-    title: '创建/修改时间',
-    dataIndex: 'creatime',
+    title: '上下架状态',
+    dataIndex: 'state',
     // width: '30%',
-    key: 'creatime'
+    key: 'state'
   },
   {
     title: '操作',
@@ -159,9 +185,7 @@ const rowSelection = {
     console.log(selected, selectedRows, changeRows)
   }
 }
-import AddIndustry from './components/AddIndustry'
-import Addsubject from './components/Addsubject.vue'
-import Editsubject from './components/Editsubject.vue'
+import Addclass from './components/Addclass'
 export default {
   data() {
     return {
@@ -169,16 +193,32 @@ export default {
       columns,
       rowSelection,
       AddIndustryVisible: false,
-      AddsubjectVisible:false,
-      // 编辑行业
+      AddsubjectVisible: false,
+      // 编辑
       form: this.$form.createForm(this, { name: 'coordinated' }),
       EditVisible: false,
-      confirmLoading: false,
+      confirmLoading: false
     }
   },
   methods: {
-    // 编辑行业弹窗表单
-    EditModal(){
+    // 删除
+    showDeleteConfirm() {
+      this.$confirm({
+        title: '',
+        content: '确认删除？对应科目章节都将删除',
+        okText: '删除',
+        okType: 'danger',
+        cancelText: '取消',
+        onOk() {
+          console.log('OK');
+        },
+        onCancel() {
+          console.log('Cancel');
+        },
+      });
+    },
+    // 编辑
+    EditModal() {
       this.EditVisible = true
     },
     handleSubmit(e) {
@@ -195,33 +235,46 @@ export default {
       })
     },
     handleOk(e) {
-      this.confirmLoading = true;
+      this.confirmLoading = true
       setTimeout(() => {
-        this.EditVisible = false;
-        this.confirmLoading = false;
-      }, 2000);
+        this.EditVisible = false
+        this.confirmLoading = false
+      }, 2000)
     },
     handleCancel(e) {
-      console.log('Clicked cancel button');
-      this.EditVisible = false;
+      console.log('Clicked cancel button')
+      this.EditVisible = false
     },
+    // 行业下拉框改变
+    IndustryChange(value) {
+      console.log(`selected ${value}`)
+    },
+    filterIndustry(input, option) {
+      return option.componentOptions.children[0].text.toLowerCase().indexOf(input.toLowerCase()) >= 0
+    },
+    // 科目下拉框
+    SubjectChange(value) {
+      console.log(`selected ${value}`)
+    },
+    filterSubject(input, option){
+        return option.componentOptions.children[0].text.toLowerCase().indexOf(input.toLowerCase()) >= 0
+    }
   },
-  components:{
-    AddIndustry,
-    Addsubject,
+  components: {
+      Addclass,
   }
 }
 </script>
 <style >
-#Subject .buttonBox {
+#Chapter .buttonBox {
   margin-bottom: 10px;
   display: flex;
 }
-#Subject .ant-table-thead > tr > th {
+#Chapter .ant-table-thead > tr > th {
   color: white;
   background: #4a90e2 !important;
 }
-.Flex{
+.Flex {
   display: flex;
 }
 </style>
